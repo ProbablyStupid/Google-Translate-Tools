@@ -1,32 +1,69 @@
-// This script is meant to run as a Chrome Extension
+// Content script for a Google Chrome Extension
 
-const separator = ';';
-const endElement = '\n';
+const separator = '';
+const endElement = '';
+
+function setDefaults() {
+    const defaults = {
+    init: true,
+    separator: ';',
+    endElement: '\n',
+    }
+
+    chrome.storage.sync.get(['init'], function(result) {
+        if (!result.init){
+            chrome.storage.sync.set(defaults);
+        }
+    });
+
+    chrome.storage.sync.get(['separator', 'endElement'], function (result) {
+        separator = result.separator;
+        endElement = result.endElement;
+    });
+}
 
 window.onload = function onload() {
+
+    // Continues with the job that was previously started
+    chrome.storage.local.get(['working'], function (result) {
+        list = getTranslateHistoryAsList();
+        file = formatListAsCSV(list);
+        downloadFile(file);
+    });
+
     // 1. Check whether we are indeed on google translate
     const domain = window.location.href;
     const gt_domain_include = "translate.google";
+
+
     if (domain.includes(gt_domain_include)) {
-        // prepare for some sort of trigger? 
-        // ... wait or listen?
+        setDefaults();
 
-        // We open the popup which might have a button to start downloading all the translations
-        // TODO: evaluate why the below doesn't work.
-        // chrome.action.openPopup();
-
-        // The Popup triggers the start of the download.
+        chrome.runtime.onMessage.addListener((message, sender, addResponse) => {
+            if (message.action === "download_csv") {
+                prepPage();
+                list = getTranslateHistoryAsList();
+                file = formatListAsCSV(list);
+                downloadFile(file);
+            }
+        });
 
     }
 }
 
-chrome.runtime.onMessage.addListener((message, sender, addResponse) => {
-    if (message.action === "download_csv") {
-        list = getTranslateHistoryAsList();
-        file = formatListAsCSV(list);
-        downloadFile(file);
+// Opens the "./history" page so that the extension can scrape the history elements
+function prepPage() {
+    const history_button_selector = '[href="./history"]';
+    const history_page_include = "history";
+    
+    if (window.location.href.includes("history")) {
+        return;
     }
-});
+
+    history_button = document.querySelector(history_button_selector);
+    chrome.storage.local.set({working: true});
+    history_button.click();
+}
 
 // Requires that all child translations that want to be downloaded are loaded on the page
 function getTranslateHistoryAsList() {

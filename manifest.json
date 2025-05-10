@@ -3,7 +3,7 @@
     "name": "Google Translate Extractor",
     "version": "0.0.1",
     "description": "",
-    "permissions": ["scripting", "downloads", "activeTab"],
+    "permissions": ["scripting", "downloads", "activeTab", "storage"],
     "content_scripts": [ {
         "matches": ["<all_urls>"],
         "js": ["content.js"],
