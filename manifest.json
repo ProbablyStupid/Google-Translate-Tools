@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "Google Translate Extractor",
+    "version": "0.0.1",
+    "description": "",
+    "permissions": ["scripting", "downloads", "activeTab"],
+    "content_scripts": [ {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+    }
+    ],
+    "action": {
+        "default_popup": "index.html"
+    }
+}
