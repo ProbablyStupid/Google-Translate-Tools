@@ -1,7 +1,8 @@
 // Content script for a Google Chrome Extension
 
-const separator = '';
-const endElement = '';
+// cannot be const because we want to allow the user to select custom separators
+separator = '';
+endElement = '';
 
 function setDefaults() {
     const defaults = {
@@ -26,9 +27,14 @@ window.onload = function onload() {
 
     // Continues with the job that was previously started
     chrome.storage.local.get(['working'], function (result) {
-        list = getTranslateHistoryAsList();
-        file = formatListAsCSV(list);
-        downloadFile(file);
+        if (result['working']) {
+            console.log("detected working!");
+            console.log(result);
+            list = getTranslateHistoryAsList();
+            file = formatListAsCSV(list);
+            downloadFile(file);
+            chrome.storage.local.set({working: false});
+        }
     });
 
     // 1. Check whether we are indeed on google translate
@@ -41,7 +47,8 @@ window.onload = function onload() {
 
         chrome.runtime.onMessage.addListener((message, sender, addResponse) => {
             if (message.action === "download_csv") {
-                prepPage();
+                // TODO: implement logic to handle when page is already in the correct state
+                // prepPage();
                 list = getTranslateHistoryAsList();
                 file = formatListAsCSV(list);
                 downloadFile(file);
@@ -107,6 +114,7 @@ function formatListAsCSV(list) {
     return out;
 }
 
+// TODO: rename perhaps? -> download sequence / string?
 // Hacky solution; creating a hyperlink element
 function downloadFile(file) {
     const blob = new Blob([file], {type: 'text/csv'});

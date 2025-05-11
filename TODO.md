@@ -1,0 +1,1 @@
+[ ] Store recently downloaded translations in chrome.storage.local
